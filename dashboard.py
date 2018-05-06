@@ -37,35 +37,6 @@ def printHTMLend():
     # End html page
     print("</html>")
 
-def printHTMLbodyfromLogin():
-    # Print body of the html page
-    print("<body>")
-    print("<div class=\"container pt-5\">")
-    print("<h2>You must login first!</h2><br><br>")
-    # Print signup form
-    print("<form class=\"card p-5\" method=\"POST\" action=\"dashboard.py\">")
-    print("<div class=\"form-group\">")
-    print("<label for=\"exampleInputAccountNum1\">Account Number</label>")
-    print("<input type=\"text\" class=\"form-control\" id=\"exampleInputAccountNum1\" aria-describedby=\"accountHelp\" placeholder=\"Enter Account no.\" name=\"ac_n\" required>")
-    print("<small id=\"accountHelp\" class=\"form-text text-muted\">Please enter your bank account number.</small>") 
-    print("</div>") 
-    # print("<div class=\"form-group\">")
-    # print("<label for=\"exampleInputEmail1\">Email address</label>")
-    # print("<input type=\"email\" class=\"form-control\" id=\"exampleInputEmail1\" aria-describedby=\"emailHelp\" placeholder=\"Enter email\">") 
-    # print("<small id=\"emailHelp\" class=\"form-text text-muted\">We'll never share your email with anyone else.</small>") 
-    # print("</div>") 
-    print("<div class=\"form-group\">") 
-    print("<label for=\"exampleInputPassword1\">Password</label>") 
-    print("<input type=\"password\" class=\"form-control\" id=\"exampleInputPassword1\" placeholder=\"Password\" name=\"pass\" required>") 
-    print("</div>")
-    # print("<div class=\"form-group form-check\">") 
-    # print("<input type=\"checkbox\" class=\"form-check-input\" id=\"exampleCheck1\">") 
-    # print("<label class=\"form-check-label\" for=\"exampleCheck1\">Check me out</label>") 
-    # print("</div>") 
-    print("<br><button type=\"submit\" class=\"btn btn-primary\">Login</button>") 
-    print("</form>") 
-    print("</div>")
-
 def showUserDetails(accnum,accbal):
     print("<div class=\"row\">")
     print("<div class=\"col-md-6 text-center\">Account Number : ")
