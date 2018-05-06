@@ -103,13 +103,13 @@ else:
         #         "VALUES (%s, %s, %s, %s)")
         update_full_name = ("UPDATE userinfo "
                         "SET full_name = %s"
-                        "WHERE account_num = %s")
+                        "WHERE account_num = %s AND full_name = NULL")
         update_email = ("UPDATE userinfo "
                         "SET email_id = %s"
-                        "WHERE account_num = %s")
+                        "WHERE account_num = %s AND email_id = NULL")
         update_password = ("UPDATE userinfo "
                         "SET password = %s"
-                        "WHERE account_num = %s")
+                        "WHERE account_num = %s AND password = NULL")
         cursor = db_conn.cursor()
         # cursor.close()
         # rows = cursor.fetchall()
@@ -125,6 +125,8 @@ else:
             cursor.execute(update_full_name,(full_name, acc_num))
             cursor.execute(update_email,(email, acc_num))
             cursor.execute(update_password,(password, acc_num))
+            if len(cursor.fetchall())==0:
+                showRegisterationError('Please check your account details and try again.')
         except:
             showRegisterationError('Please check your account details and try again.')
             cursor.close()
