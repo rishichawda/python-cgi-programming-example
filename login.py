@@ -14,7 +14,7 @@ def printHTMLhead():
     # Print head of the html page
     print("<head>")
     print("<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css\" integrity=\"sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB\" crossorigin=\"anonymous\">")
-    print("<title>Banking System using CGI</title>")
+    print("<title>User Login</title>")
     print("</head>")
 
 def printHTMLend():
@@ -79,7 +79,7 @@ else:
 
     try:
         db_conn = conn.connect(**config)
-    except mysql.connector.Error as err:
+    except conn.Error as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
             print("Something is wrong with your user name or password")
         elif err.errno == errorcode.ER_BAD_DB_ERROR:
