@@ -87,11 +87,6 @@ else:
         else:
             print(err)
     else:
-        # check_acc = ("SELECT * FROM accountinfo "
-        #                 "WHERE account_num = %s")
-        # register_user = ("INSERT INTO userinfo "
-        #         "(full_name, account_num, email_id, password) "
-        #         "VALUES (%s, %s, %s, %s)")
         update_full_name = ("UPDATE userinfo "
                         "SET full_name = %s"
                         "WHERE account_num = %s AND full_name = NULL")
@@ -102,17 +97,7 @@ else:
                         "SET password = %s"
                         "WHERE account_num = %s AND password = NULL")
         cursor = db_conn.cursor()
-        # cursor.close()
-        # rows = cursor.fetchall()
-        # if len(rows)==0:
-        #     showRegisterationError()
-        #     cursor.close()
-        #     db_conn.close()
-        # else:
-        # user_data = (full_name, acc_num, email, password)
-        # cursor = db_conn.cursor()
         try:
-            # cursor.execute(register_user, user_data)
             cursor.execute(update_full_name,(full_name, acc_num))
             cursor.execute(update_email,(email, acc_num))
             cursor.execute(update_password,(password, acc_num))
