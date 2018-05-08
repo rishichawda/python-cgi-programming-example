@@ -1,6 +1,6 @@
 #!/Library/Frameworks/Python.framework/Versions/3.6/bin/python3
 
-import cgi,cgitb
+import cgi,cgitb,datetime
 cgitb.enable()
 import mysql.connector as conn
 from mysql.connector import errorcode
@@ -30,13 +30,15 @@ def printHTMLend():
 def printHTMLbody():
     # Print body of the html page
     print("<body>")
+    if form.getvalue('loginattempt')=='1':
+        print("<div class=\"alert alert-danger\" role=\"alert\">Incorrect account number / password details! Please check details and try again</div>")
     print("<div class=\"container pt-5\">")
     print("<h2>Login</h2><br><br>")
-    # Print signup form
+    # Print login form
     print("<form class=\"card p-5\" method=\"POST\" action=\"dashboard.py\">")
     print("<div class=\"form-group\">")
     print("<label for=\"exampleInputAccountNum1\">Account Number</label>")
-    print("<input type=\"text\" class=\"form-control\" id=\"exampleInputAccountNum1\" aria-describedby=\"accountHelp\" placeholder=\"Enter Account no.\" name=\"ac_n\" required>")
+    print("<input type=\"text\" oninput=\"this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');\" maxlength=\"11\" class=\"form-control\" id=\"exampleInputAccountNum1\" aria-describedby=\"accountHelp\" placeholder=\"Enter Account no.\" name=\"ac_n\" required>")
     print("<small id=\"accountHelp\" class=\"form-text text-muted\">Please enter your bank account number.</small>") 
     print("</div>") 
     print("<div class=\"form-group\">") 
@@ -63,6 +65,13 @@ full_name = form.getvalue('f_nm')
 email = form.getvalue('em_id')
 password = form.getvalue('pass')
 
+try:
+    logfile = open('my_account_app.log','a')
+except:
+    print('Error opening log file..')
+else:
+    logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [User] - '+'GET request at http://localhost/cgi-bin/bankingsystem/login.py\n')
+
 if acc_num==None:
     printHTMLstart()
     printHTMLhead()
@@ -81,39 +90,52 @@ else:
         db_conn = conn.connect(**config)
     except conn.Error as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-            print("Something is wrong with your user name or password")
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Connection request at http://localhost/cgi-bin/bankingsystem/login.py | Failed to connect to database.\n')
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Wrong database user name or password. - login.py\n')
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Check admin details provided in `config` at line 80 - login.py.\n')
         elif err.errno == errorcode.ER_BAD_DB_ERROR:
-            print("Database does not exist")
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Connection request at http://localhost/cgi-bin/bankingsystem/login.py | Failed to connect to database.\n')
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Database does not exist. - login.py\n')
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Check database details provided in `config` at line 80 - login.py.\n')
         else:
-            print(err)
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Error in conn.connect() at line 88 - login.py.\n')
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Error details : '+err)
     else:
+        logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Database connection successful! - login.py\n')
         update_full_name = ("UPDATE userinfo "
                         "SET full_name = %s"
-                        "WHERE account_num = %s AND full_name = NULL")
+                        "WHERE account_num = %s AND full_name IS NULL")
         update_email = ("UPDATE userinfo "
                         "SET email_id = %s"
-                        "WHERE account_num = %s AND email_id = NULL")
+                        "WHERE account_num = %s AND email_id IS NULL")
         update_password = ("UPDATE userinfo "
                         "SET password = %s"
-                        "WHERE account_num = %s AND password = NULL")
+                        "WHERE account_num = %s AND password IS NULL")
         cursor = db_conn.cursor()
         try:
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [User] - '+'Handle user request at http://localhost/cgi-bin/bankingsystem/register.py: Register user.\n')
             cursor.execute(update_full_name,(full_name, acc_num))
             cursor.execute(update_email,(email, acc_num))
             cursor.execute(update_password,(password, acc_num))
-            if len(cursor.fetchall())==0:
-                showRegisterationError('Please check your account details and try again.')
         except:
-            showRegisterationError('Please check your account details and try again.')
-            cursor.close()
-            db_conn.close()
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Error at cursor.execute(). - login.py\n')
         else:
-            db_conn.commit()
-            cursor.close()
-            db_conn.close()
-            # Print page
-            printHTMLstart()
-            printHTMLhead()
-            print("<div class=\"alert alert-success text-center lead\" role=\"alert\">Registered Successfully! Please login to continue.</div>")
-            printHTMLbody()
-            printHTMLend()
+            if str(cursor.rowcount)=='0':
+                logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [User] - '+'Error handling request: User registeration failed | Error details : Invalid login details::'+'account_num='+acc_num+'.\n')
+                showRegisterationError('Please check your account details and try again.')
+                cursor.close()
+                db_conn.close()
+                logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Database connection closed. - login.py\n')
+            else:
+                logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [User] - '+'Response at http://localhost/cgi-bin/bankingsystem/dashboard.py: User registered successfully | Userdetails:: accountnum='+acc_num+'.\n')
+                db_conn.commit()
+                logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Commit new changes to database. - login.py - Commit details - account_number='+acc_num+',fullname='+full_name+',email='+email+'\n')
+                cursor.close()
+                db_conn.close()
+                logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Database connection closed. - login.py\n')
+                # Print page
+                printHTMLstart()
+                printHTMLhead()
+                print("<div class=\"alert alert-success text-center lead\" role=\"alert\">Registered Successfully! Please login to continue.</div>")
+                printHTMLbody()
+                printHTMLend()

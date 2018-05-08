@@ -1,6 +1,6 @@
 #!/Library/Frameworks/Python.framework/Versions/3.6/bin/python3
 
-import cgi,cgitb
+import cgi,cgitb,datetime
 cgitb.enable()
 
 def printHTMLbody():
@@ -12,7 +12,7 @@ def printHTMLbody():
     print("<form class=\"card p-5\" action=\"login.py\" method=\"POST\">")
     print("<div class=\"form-group\">")
     print("<label for=\"exampleInputAccountNum1\">Account Number</label>")
-    print("<input type=\"text\" class=\"form-control\" id=\"exampleInputAccountNum1\" aria-describedby=\"accountHelp\" placeholder=\"Enter Account no.\" name=\"ac_n\" required>")
+    print("<input type=\"text\" oninput=\"this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');\" maxlength=\"11\" class=\"form-control\" id=\"exampleInputAccountNum1\" aria-describedby=\"accountHelp\" placeholder=\"Enter Account no.\" name=\"ac_n\" required>")
     print("<small id=\"accountHelp\" class=\"form-text text-muted\">Please enter your bank account number.</small>") 
     print("</div>") 
     print("<div class=\"form-group\">")
@@ -55,7 +55,16 @@ def printHTMLend():
     # End html page
     print("</html>")
 
+
 printHTMLstart()
 printHTMLhead()
 printHTMLbody()
 printHTMLend()
+
+
+try:
+    logfile = open('my_account_app.log','a')
+except:
+    print('Error opening log file..')
+else:
+    logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [User] - '+'GET request at http://localhost/cgi-bin/bankingsystem/register.py\n')

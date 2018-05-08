@@ -1,6 +1,6 @@
 #!/Library/Frameworks/Python.framework/Versions/3.6/bin/python3
 
-import cgi,cgitb
+import cgi,cgitb,datetime
 cgitb.enable()
 import mysql.connector as conn
 from mysql.connector import errorcode
@@ -71,7 +71,7 @@ def printAddPayeeForm():
     print("<h2 id=\"formError\" class=\"text-danger lead\">All fields are required.</h2>")
     print("<div class=\"form-group\">")
     print("<label for=\"exampleInputPayeeAccountNumber\">Payee Account Number</label>")
-    print("<input type=\"text\" class=\"form-control\" id=\"exampleInputPayeeAccountNumber\" aria-describedby=\"PayeeAccountNumberHelp\" placeholder=\"Enter Account number\" name=\"payee_details\" required>")
+    print("<input type=\"text\" class=\"form-control\" oninput=\"this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');\" maxlength=\"11\" id=\"exampleInputPayeeAccountNumber\" aria-describedby=\"PayeeAccountNumberHelp\" placeholder=\"Enter Account number\" name=\"payee_details\" required>")
     print("<small id=\"PayeeAccountNumberHelp\" class=\"form-text text-muted\">Account number of the Payee.</small>")
     print("</div>")
     print("<div class=\"form-group\">")
@@ -94,7 +94,7 @@ def printRemovePayeeForm():
     print("<h2 id=\"nosuchpayee_error\" class=\"text-danger lead\">Payee not found.</h2>")
     print("<div class=\"form-group\">")
     print("<label for=\"exampleInputPayeeAccountNumber\">Payee Account Number</label>")
-    print("<input type=\"text\" class=\"form-control\" id=\"exampleInputPayeeAccountNumber\" aria-describedby=\"PayeeAccountNumberHelp\" placeholder=\"Enter Account number\" name=\"rpayee_details\" required>")
+    print("<input type=\"text\" oninput=\"this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');\" maxlength=\"11\" class=\"form-control\" id=\"exampleInputPayeeAccountNumber\" aria-describedby=\"PayeeAccountNumberHelp\" placeholder=\"Enter Account number\" name=\"rpayee_details\" required>")
     print("<small id=\"PayeeAccountNumberHelp\" class=\"form-text text-muted\">Account number of the Payee.</small>")
     print("</div>")
     print("<div class=\"form-group\">")
@@ -112,7 +112,16 @@ form = cgi.FieldStorage()
 acc_num = form.getvalue('ac_n')
 password = form.getvalue('pass')
 
+try:
+    logfile = open('my_account_app.log','a')
+except:
+    print('error opening log file..')
+else:
+    logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [User] - '+'GET request at http://localhost/cgi-bin/bankingsystem/dashboard.py\n')
+
+
 if form.getvalue('ac_n')==None:
+    logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Redirect request to http://localhost/cgi-bin/bankingsystem/login.py - dashboard.py\n')
     redirectToLogin()
 else:
     # Config object for database connection
@@ -126,20 +135,33 @@ else:
         db_conn = conn.connect(**config)
     except conn.Error as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-            print("Something is wrong with your user name or password")
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Connection request at http://localhost/cgi-bin/bankingsystem/dashboard.py | Failed to connect to database.\n')
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Wrong database user name or password. - dashboard.py\n')
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Check admin details provided in `config` at line 128 - dashboard.py.\n')
         elif err.errno == errorcode.ER_BAD_DB_ERROR:
-            print("Database does not exist")
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Connection request at http://localhost/cgi-bin/bankingsystem/dashboard.py | Failed to connect to database.\n')
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Database does not exist. - dashboard.py\n')
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Check database details provided in `config` at line 128 - dashboard.py.\n')
         else:
-            print(err)
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Error in conn.connect() at line 135 - dashboard.py.\n')
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Error details : '+err)
     else:
+        logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Database connection successful! - dashboard.py\n')
         cursor = db_conn.cursor()
         check_user = ("SELECT * FROM userinfo "
                         "WHERE account_num=%s AND password=%s")
         cursor.execute(check_user,(str(acc_num),password))
+        logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [User] - '+'Handle user request at http://localhost/cgi-bin/bankingsystem/dashboard.py: Login user.\n')
         rows = cursor.fetchall()
         if len(rows)==0:
-            redirectToLogin()
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [User] - '+'Error handling request: User login failed | Error details : Invalid login details::'+'account_num='+acc_num+'.\n')
+            printHTMLstart()
+            print("  <head>")
+            print("    <meta http-equiv=\"refresh\" content=\"0;url=login.py?loginattempt=1\" />") 
+            print("  </head>")
+            print("</html>")
         else:
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [User] - '+'Response at http://localhost/cgi-bin/bankingsystem/dashboard.py: User logged in | Userdetails:: accountnum='+acc_num+'.\n')
             printHTMLstart()
             printHTMLhead()
             # Print body of the html page
@@ -158,3 +180,6 @@ else:
             print("<button class=\"btn btn-warning mt-2 tool-button\" id=\"remove_payee_button\" onclick=\"show_remove_payee_form()\">Remove Payee</button>")
             print("</div>")
             printHTMLend()
+        cursor.close()
+        db_conn.close()
+        logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Database connection closed. - dashboard.py\n')

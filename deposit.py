@@ -1,6 +1,6 @@
 #!/Library/Frameworks/Python.framework/Versions/3.6/bin/python3
 
-import cgi,cgitb
+import cgi,cgitb,datetime
 cgitb.enable()
 
 def printHTMLstart():
@@ -25,9 +25,9 @@ def printHTMLbody():
     print("<input id=\"user_acc\" name=\"user_accnum\" style=\"display:none;\">")
     print("<input id=\"user_bal\" name=\"user_accbal\" style=\"display:none;\">")
     print("<div class=\"form-group\">")
-    print("<label for=\"exampleInputTransferAmount\">Amount</label>")
-    print("<input type=\"text\" class=\"form-control\" id=\"exampleInputTransferAmount\" aria-describedby=\"TransferAmountHelp\" placeholder=\"Amount in Rupees\" name=\"deposit_details\">")
-    print("<small id=\"TransferAmountHelp\" class=\"form-text text-muted\">Enter deposit amount in Rupees.</small>")
+    print("<label for=\"exampleInputDepositAmount\">Amount</label>")
+    print("<input type=\"text\" oninput=\"this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');\" maxlength=\"11\" class=\"form-control\" id=\"exampleInputDepositAmount\" aria-describedby=\"DepositAmountHelp\" placeholder=\"Amount in Rupees\" name=\"deposit_details\">")
+    print("<small id=\"DepositAmountHelp\" class=\"form-text text-muted\">Enter deposit amount in Rupees.</small>")
     print("</div>")
     print("<button type=\"submit\" class=\"btn btn-success\">Deposit</button>")
     print("</form>")
@@ -50,3 +50,10 @@ printHTMLstart()
 printHTMLhead()
 printHTMLbody()
 printHTMLend()
+
+try:
+    logfile = open('my_account_app.log','a')
+except:
+    print('error opening log file..')
+else:
+    logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [User] - '+'GET request at http://localhost/cgi-bin/bankingsystem/deposit.py\n')
