@@ -73,13 +73,13 @@ else:
         cursor.close()
         db_conn.close()
         logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Database connection closed. - deposit_request.py. - @user:'+user_acc_num+'\n')
-        print('Transfer failed')
+        print('Transfer failed.')
     else:
         db_conn.commit()
         logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Commit new changes to database. - deposit_request.py. - @user:'+user_acc_num+'\n')
         cursor.close()
         db_conn.close()
         logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Database connection closed. - deposit_request.py. - @user:'+user_acc_num+'\n')
-        print('Transfer success')
+        print('Transfer success.')
 
 printHTMLend()
