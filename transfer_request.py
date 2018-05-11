@@ -69,21 +69,24 @@ else:
     transfer_query = ("UPDATE userinfo "
                         "SET account_bal = %s"
                         "WHERE account_num = %s")
-    try:
-        cursor.execute(transfer_query,(user_acc_bal-payee_transfer_amt,user_acc_num))
-    except:
-        logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [User] - '+'Transfer money transaction failed. - transfer_request.py. - @user:'+user_acc_num+'\n')
-        cursor.close()
-        db_conn.close()
-        logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Database connection closed. - transfer_request.py. - @user:'+user_acc_num+'\n')
-        print('Transfer failed')
+    if user_acc_bal >= payee_transfer_amt:
+        try:
+            cursor.execute(transfer_query,(user_acc_bal-payee_transfer_amt,user_acc_num))
+        except:
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [User] - '+'Transfer money transaction failed. - transfer_request.py. - @user:'+user_acc_num+'\n')
+            cursor.close()
+            db_conn.close()
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Database connection closed. - transfer_request.py. - @user:'+user_acc_num+'\n')
+            print('Transfer failed.')
+        else:
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [User] - '+'Transfer money transaction successful. - transfer_request.py. - @user:'+user_acc_num+'\n')
+            db_conn.commit()
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Commit new changes to database. - transfer_request.py. - @user:'+user_acc_num+'\n')
+            cursor.close()
+            db_conn.close()
+            logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Database connection closed. - transfer_request.py. - @user:'+user_acc_num+'\n')
+            print('Transfer success.')
     else:
-        logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [User] - '+'Transfer money transaction successful. - transfer_request.py. - @user:'+user_acc_num+'\n')
-        db_conn.commit()
-        logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Commit new changes to database. - transfer_request.py. - @user:'+user_acc_num+'\n')
-        cursor.close()
-        db_conn.close()
-        logfile.write('['+ str(datetime.datetime.now().isoformat()) +'] - [Admin] - '+'Database connection closed. - transfer_request.py. - @user:'+user_acc_num+'\n')
-        print('Transfer success')
+        print('Transfer unsuccessful. Please enter a valid amount.')
 
 printHTMLend()
